@@ -200,6 +200,15 @@ char* processNext(char* strm)
 	}
 }
 
+// ruleid: raptor-signed-unsigned-conversion
+size_t count(int x, size_t sz) {
+	// ok: raptor-signed-unsigned-conversion
+	size_t offset = 99;
+	int y = 50;
+	size_t offset_y = 50;
+	return y;
+}
+
 int main() 
 {
 	printf("Hello, World!");

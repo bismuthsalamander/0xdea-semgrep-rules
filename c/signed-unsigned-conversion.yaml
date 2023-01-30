@@ -50,35 +50,20 @@ rules:
       - c
       - cpp
     pattern-either:
-      # signed to unsigned
-      - pattern: (unsigned int $UNSIGNED) = <... (int $SIGNED) ...>
-      - pattern: |
-          unsigned int $FUN(...)
-          {
-          ...
-          return (int $SIGNED);
-          }
-      - pattern: (unsigned $UNSIGNED) = <... (int $SIGNED) ...>
-      - pattern: |
-          unsigned $FUN(...)
-          {
-          ...
-          return (int $SIGNED);
-          }
-      - pattern: (size_t $UNSIGNED) = <... (int $SIGNED) ...>
-      - pattern: |
-          size_t $FUN(...)
-          {
-          ...
-          return (int $SIGNED);
-          }
-      - pattern: (size_t $UNSIGNED) = <... (off_t $SIGNED) ...>
-      - pattern: |
-          size_t $FUN(...)
-          {
-          ...
-          return (off_t $SIGNED);
-          }
+      - patterns:
+        - pattern-either:
+          # signed to unsigned
+          - pattern: (unsigned int $UNSIGNED) = <... (int $SIGNED) ...>
+          - pattern: (unsigned $UNSIGNED) = <... (int $SIGNED) ...>
+          - pattern: (size_t $UNSIGNED) = <... (int $SIGNED) ...>
+          - pattern: (size_t $UNSIGNED) = <... (off_t $SIGNED) ...>
+          # unsigned to signed
+          - pattern: (int $SIGNED) = <... (unsigned int $UNSIGNED) ...>
+          - pattern: (int $SIGNED) = <... (unsigned $UNSIGNED) ...>
+          - pattern: (int $SIGNED) = <... (size_t $UNSIGNED) ...>
+          - pattern: (off_t $SIGNED) = <... (size_t $UNSIGNED) ...>
+        - pattern-not-regex: =\s*\d+\b
+      # library function calls
       - pattern: strncpy($DST, $SRC, (int $LEN))
       - pattern: stpncpy($DST, $SRC, (int $LEN))
       - pattern: strncat($DST, $SRC, (int $LEN))
@@ -100,29 +85,50 @@ rules:
       - pattern: read($FD, $BUF, (int $LEN))
       - pattern: recv($SD, $BUF, (int $LEN), $FL)
       - pattern: recvfrom($SD, $BUF, (int $LEN), $FL, ...)
-      # unsigned to signed
-      - pattern: (int $SIGNED) = <... (unsigned int $UNSIGNED) ...>
+      # return value signed to unsigned
+      - pattern: |
+          unsigned int $FUN(...)
+          {
+          ...
+          return (int $SIGNED);
+          }
+      - pattern: |
+          unsigned $FUN(...)
+          {
+          ...
+          return (int $SIGNED);
+          }
+      - pattern: |
+          size_t $FUN(...)
+          {
+          ...
+          return (int $SIGNED);
+          }
+      - pattern: |
+          size_t $FUN(...)
+          {
+          ...
+          return (off_t $SIGNED);
+          }
+      # return value unsigned to signed
       - pattern: |
           int $FUN(...)
           {
           ...
           return (unsigned int $UNSIGNED);
           }
-      - pattern: (int $SIGNED) = <... (unsigned $UNSIGNED) ...>
       - pattern: |
           int $FUN(...)
           {
           ...
           return (unsigned $UNSIGNED);
           }
-      - pattern: (int $SIGNED) = <... (size_t $UNSIGNED) ...>
       - pattern: |
           int $FUN(...)
           {
           ...
           return (size_t $UNSIGNED);
           }
-      - pattern: (off_t $SIGNED) = <... (size_t $UNSIGNED) ...>
       - pattern: |
           off_t $FUN(...)
           {
